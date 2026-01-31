@@ -73,15 +73,55 @@ DEVICE_PROFILE_ID="profile_id"
 ## Building
 - Requires docker: https://www.docker.com/get-started/
 
-Run the compose.yml file (as admin):
+Run the compose.yml file (creates a docker container and runs it):
+
+***This needs to be run as admin***
 ```
 docker compose up -d
+```
+
+If you want to stop the container
+
+***As admin***
+```
+docker compose down
+```
+
+### Possible errors
+```Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint chirpstack_keygen (2555a3598f9fbf1b44021c258cdaf856504c4172cfa1685bf774ed1c387c9002): failed to bind host port for 0.0.0.0:3000:<ip>:3000/tcp: address already in use```<br>
+Means that the port 3000 the container tries to use is already busy.
+
+***Solutions:***<br>
+Change the port in the compose.yml file:
+```
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: chirpstack_keygen
+    ports:
+      - <new unused port number>:3000
+    env_file:
+      - ./.env
+    command: ["node", "."]
+```
+
+Or free the busy port:
+
+***Linux***
+```
+sudo fuser -k 3000/tcp
+```
+***Windows***
+```
+netstat -ano | findstr :3000
 ```
 
 ## Generating the access keys
 - Make sure that the gateway address is reachable
 
-Go to: ```http://localhost:3000```
+Go to: ```http://localhost:PORT```. (Normally PORT is 3000, but if you changed it in the compose.yml file, then the new port).
 
 Enter you lorawan antenna's DevEui, a name of your choice and click "Generate"
 
